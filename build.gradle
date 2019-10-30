@@ -14,6 +14,10 @@ plugins {
     id 'application'
 }
 
+ext {
+    igniteVersion = '2.7.6'
+}
+
 repositories {
     // Use jcenter for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
@@ -23,7 +27,24 @@ repositories {
 dependencies {
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:28.0-jre'
-
+    compile "org.apache.ignite:ignite-core:${igniteVersion}"
+    compile "org.apache.ignite:ignite-cassandra-serializers:${igniteVersion}"
+    compile "org.apache.ignite:ignite-cassandra-store:${igniteVersion}"
+	compile "org.apache.ignite:ignite-spring:${igniteVersion}"
+	compile "org.apache.ignite:ignite-log4j:${igniteVersion}"
+	compile "org.apache.ignite:ignite-indexing:${igniteVersion}"
+	compile "org.apache.ignite:ignite-spring-data_2.0:${igniteVersion}"
+	compile "org.apache.ignite:ignite-ml:${igniteVersion}"
+	//compile "org.apache.ignite:ignite-ml-xgboost-model-parser:${igniteVersion}"
+	//compile "org.apache.ignite:ignite-ml-spark-model-parser:${igniteVersion}"
+	//compile "org.apache.ignite:ignite-ml-tensorflow-model-parser:${igniteVersion}"
+	compile "commons-cli:commons-cli:1.2"
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+	//compile "com.google.code.simple-spring-memcached:spymemcached:2.8.4"
+	//compile "org.jpmml:pmml-model:1.4.7"
+	//compile "org.apache.parquet:parquet-hadoop:1.10.0"
+	//compile "org.apache.hadoop:hadoop-common:2.9.1"
+    compile "com.datastax.cassandra:cassandra-driver-core:3.2.0"
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
 }
