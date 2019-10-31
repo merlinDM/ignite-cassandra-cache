@@ -1,0 +1,4 @@
+<persistence keyspace="ignite" table="access_log_test">
+    <keyPersistence class="java.lang.String" strategy="PRIMITIVE" />
+    <valuePersistence class="java.lang.String" strategy="PRIMITIVE" />
+</persistence>
