@@ -13,23 +13,25 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
 public class IgniteCassandra {
 
-    final static Logger logger = getLogger();
-    public static final String APP_PROPERTIES_FILE = "ignite-cassandra.properties";
-    public static final String CASSANDRA_CONTACT_POINTS = "cassandra.contactPoints";
-    public static final String IGNITE_PERSISTENCE_SETTINGS = "ignite.persistenceSettings";
-    public static final String CACHE_NAME = "ignite-cassandra";
-    public static final String LOG4J_PROPERTIES = "log4j.properties";
+    private static Logger logger = LogManager.getLogger(IgniteCassandra.class.getName());
+    private static final String APP_PROPERTIES_FILE = "ignite-cassandra.properties";
+    private static final String CASSANDRA_CONTACT_POINTS = "cassandra.contactPoints";
+    private static final String IGNITE_PERSISTENCE_SETTINGS = "ignite.persistenceSettings";
+    private static final String CACHE_NAME = "ignite-cassandra";
+    private static final String LOG4J_PROPERTIES = "log4j.properties";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, URISyntaxException {
         Properties appConfig = getConfiguration(APP_PROPERTIES_FILE);
         CacheConfiguration cacheConfig = new CacheConfiguration();
         IgniteConfiguration igniteConfig = new IgniteConfiguration();
@@ -51,7 +53,7 @@ public class IgniteCassandra {
         cacheStoreFactory.setDataSource(dataSource);
 
         String persistenceSettingsXml = appConfig.getProperty(IGNITE_PERSISTENCE_SETTINGS);
-        KeyValuePersistenceSettings persistenceSettings = new KeyValuePersistenceSettings(persistenceSettingsXml);
+        KeyValuePersistenceSettings persistenceSettings = getPersistenceSettings(persistenceSettingsXml);
         cacheStoreFactory.setPersistenceSettings(persistenceSettings);
         cacheConfig.setCacheStoreFactory(cacheStoreFactory);
 
@@ -66,18 +68,12 @@ public class IgniteCassandra {
         Ignite ignite = Ignition.start(igniteConfig);
     }
 
-    private static Logger getLogger() {
-        URL is = IgniteCassandra.class.getClassLoader().getResource(LOG4J_PROPERTIES);
-        PropertyConfigurator.configure(is);
-        return LogManager.getLogger(IgniteCassandra.class);
-    }
-
-    public static KeyValuePersistenceSettings getPersistenceSettings(String filename) throws URISyntaxException {
+    public static KeyValuePersistenceSettings getPersistenceSettings(String filename) throws URISyntaxException, IOException {
         URL url = IgniteCassandra.class.getClassLoader().getResource(filename);
-        File file = new File(url.toURI());
-        System.out.println("Loading persistence settings from " + file.getAbsolutePath());
-        logger.info("Loading persistence settings from " + file.getAbsolutePath());
-        KeyValuePersistenceSettings settings = new KeyValuePersistenceSettings(file);
+        Path path = new File(url.toURI()).toPath();
+        String xmlLine = Files.readString(path, StandardCharsets.UTF_8);
+        logger.debug(xmlLine);
+        KeyValuePersistenceSettings settings = new KeyValuePersistenceSettings(xmlLine);
         return settings;
     }
 

@@ -7,6 +7,7 @@ import static org.junit.Assert.*;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Properties;
 
@@ -22,7 +23,7 @@ public class IgniteCassandraTest {
     }
 
     @Test
-    public void testPersistenceSettingsLoad() throws URISyntaxException {
+    public void testPersistenceSettingsLoad() throws URISyntaxException, IOException {
         String testResource = "persistence-settings-test.xml";
         KeyValuePersistenceSettings settings = IgniteCassandra.getPersistenceSettings(testResource);
         assertEquals(settings.getTable(), "access_log_test");
@@ -30,7 +31,7 @@ public class IgniteCassandraTest {
     }
 
     @Test
-    public void testPersistenceSettingsLoad2() throws URISyntaxException {
+    public void testPersistenceSettingsLoad2() throws URISyntaxException, IOException {
         String testResource = "persistence-settings.xml";
         KeyValuePersistenceSettings settings = IgniteCassandra.getPersistenceSettings(testResource);
     }
