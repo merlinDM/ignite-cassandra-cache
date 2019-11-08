@@ -27,12 +27,17 @@ public class IgniteCassandra {
     private static Logger logger = LogManager.getLogger(IgniteCassandra.class.getName());
     private static final String APP_PROPERTIES_FILE = "ignite-cassandra.properties";
     private static final String CASSANDRA_CONTACT_POINTS = "cassandra.contactPoints";
+    private static final String CASSANDRA_USER_NAME = "cassandra.username";
+    private static final String CASSANDRA_USER_PASSWORD = "cassandra.password";
     private static final String IGNITE_PERSISTENCE_SETTINGS = "ignite.persistenceSettings";
     private static final String CACHE_NAME = "ignite-cassandra";
     private static final String LOG4J_PROPERTIES = "log4j.properties";
 
     public static void main(String[] args) throws IOException, URISyntaxException {
-        Properties appConfig = getConfiguration(APP_PROPERTIES_FILE);
+
+        PropertiesLogger appConfig = new PropertiesLogger();
+        appConfig.load(APP_PROPERTIES_FILE);
+
         CacheConfiguration cacheConfig = new CacheConfiguration();
         IgniteConfiguration igniteConfig = new IgniteConfiguration();
 
@@ -44,8 +49,8 @@ public class IgniteCassandra {
         dataSource.setContactPoints(appConfig.getProperty(CASSANDRA_CONTACT_POINTS));
         dataSource.setReadConsistency("ONE");
         dataSource.setWriteConsistency("ONE");
-        dataSource.setUser("cassandra");
-        dataSource.setPassword("cassandra");
+        dataSource.setUser(appConfig.getProperty(CASSANDRA_USER_NAME));
+        dataSource.setPassword(appConfig.getProperty(CASSANDRA_USER_PASSWORD));
 
         RoundRobinPolicy robinPolicy = new RoundRobinPolicy();
         dataSource.setLoadBalancingPolicy(robinPolicy);
@@ -58,7 +63,7 @@ public class IgniteCassandra {
         cacheConfig.setCacheStoreFactory(cacheStoreFactory);
 
         cacheConfig.setWriteThrough(true);
-        cacheConfig.setWriteBehindEnabled(true);
+//        cacheConfig.setWriteBehindEnabled(true);
         cacheConfig.setReadThrough(true);
 
         // Sets the cache configuration
@@ -69,33 +74,10 @@ public class IgniteCassandra {
     }
 
     public static KeyValuePersistenceSettings getPersistenceSettings(String filename) throws URISyntaxException, IOException {
-        URL url = IgniteCassandra.class.getClassLoader().getResource(filename);
-        Path path = new File(url.toURI()).toPath();
+        Path path = Path.of(".", filename);
         String xmlLine = Files.readString(path, StandardCharsets.UTF_8);
         logger.debug(xmlLine);
         KeyValuePersistenceSettings settings = new KeyValuePersistenceSettings(xmlLine);
         return settings;
-    }
-
-    public static Properties getConfiguration(String filename) {
-        Properties properties = new Properties();
-        InputStream input = null;
-        try {
-            input = IgniteCassandra.class.getClassLoader().getResourceAsStream(filename);
-            properties.load(input);
-        } catch (IOException ex) {
-            logger.error("Cannot load configuration from " + filename);
-            logger.error(ex.getStackTrace().toString());
-            System.exit(1);
-        } finally {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return properties;
     }
 }
