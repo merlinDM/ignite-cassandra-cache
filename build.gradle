@@ -62,11 +62,6 @@ dependencies {
 
 mainClassName = 'com.gd.IgniteCassandra'
 
-//application {
-//    // Define the main class for the application
-//    mainClassName = 'com.gd.IgniteCassandra'
-//}
-
 jar {
     manifest {
         attributes(
@@ -118,7 +113,7 @@ task rmDockerContainer(type:Exec) {
 task cleanDocker(type:Exec) {
     group "docker"
 
-    dependsOn killDockerContainer, rmDockerContainer
+    dependsOn killDockerContainer as Task, rmDockerContainer as Task
 
     commandLine "echo", "cleaned up successfully"
 }
