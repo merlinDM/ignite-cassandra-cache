@@ -44,18 +44,16 @@ repositories {
 
 dependencies {
     // This dependency is used by the application.
-    implementation 'com.google.guava:guava:28.0-jre'
     compile "org.apache.ignite:ignite-core:${igniteVersion}"
     compile "org.apache.ignite:ignite-rest-http:${igniteVersion}"
     compile "org.apache.ignite:ignite-cassandra-serializers:${igniteVersion}"
-    compile "org.apache.ignite:ignite-cassandra-store:${igniteVersion}"
 	compile "org.apache.ignite:ignite-spring:${igniteVersion}"
 	compile "org.apache.ignite:ignite-log4j:${igniteVersion}"
 	compile "org.apache.ignite:ignite-indexing:${igniteVersion}"
 	compile "org.apache.ignite:ignite-spring-data_2.0:${igniteVersion}"
 	compile "commons-cli:commons-cli:1.2"
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
-    compile "com.datastax.cassandra:cassandra-driver-core:3.2.0"
+    compile "com.datastax.cassandra:cassandra-driver-core:3.6.0"
     compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.28'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.28'
     // Use JUnit test framework
@@ -89,17 +87,21 @@ task buildDockerImage(type:Exec) {
 }
 
 task runDockerImage(type:Exec) {
-    workingDir '.'
+    group "docker"
+
+    dependsOn buildDockerImage
 
     commandLine "docker", "run",
             "-t",
             "--name", containerName,
             "--hostname", containerName,
             "--network", "streaming-capstone",
+            "-p", "79:8080",
             "gd/ignite:latest"
 }
 
 task killDockerContainer(type:Exec) {
+    group "docker"
 
     commandLine "docker", "kill",
         containerName
@@ -107,12 +109,16 @@ task killDockerContainer(type:Exec) {
 
 
 task rmDockerContainer(type:Exec) {
+    group "docker"
 
     commandLine "docker", "rm",
             containerName
 }
 
 task cleanDocker(type:Exec) {
+    group "docker"
 
     dependsOn killDockerContainer, rmDockerContainer
+
+    commandLine "echo", "cleaned up successfully"
 }
