@@ -12,7 +12,7 @@
 
 FROM openjdk:11 as runner
 
-COPY build/libs/ /application/
+COPY build/libs/ignite-code-all.jar /application/ignite-code-all.jar
 
 COPY build/resources/main/ /application/
 
