@@ -12,10 +12,13 @@
 
 FROM openjdk:11 as runner
 
-COPY build/libs/ignite-code-all.jar /application/ignite-code-all.jar
+ARG DOCKER_ARG_JAR_NAME
+ENV JAR_NAME $DOCKER_ARG_JAR_NAME
 
-COPY build/resources/main/ /application/
+COPY . /application/
 
 WORKDIR /application
 
-ENTRYPOINT ["java", "-jar", "ignite-code-all.jar"]
+#RUN echo `pwd`/$JAR_NAME && chmod +x $JAR_NAME && ls -lah  && echo "$(java -jar $JAR_NAME)"
+
+CMD java -jar $JAR_NAME

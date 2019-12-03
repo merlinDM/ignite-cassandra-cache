@@ -1,18 +1,39 @@
 String containerName = "ignite-00"
 String containerTag = "gd/ignite"
+String dockerWorkingDir = "$project.buildDir/docker"
+
+// TODO: this task implicitly requires shadowJar plugin.
+task setupDockerContext(type:Sync) {
+    description "Copy jar containing all dependencies into $dockerWorkingDir."
+
+    group 'docker'
+
+    from 'src/main/docker', shadowJar.outputs.files
+    into dockerWorkingDir
+}
+
+def sharedExecTaskCfg = {
+    group 'docker'
+    workingDir dockerWorkingDir
+}
 
 task buildDockerImage(type:Exec) {
-    group "docker"
+    description "Build Docker image and tag it as $containerTag."
 
-    workingDir '.'
+    with sharedExecTaskCfg
+
+    dependsOn setupDockerContext as Task
 
     commandLine "docker", "build",
             "-t", containerTag,
+            "--build-arg", "DOCKER_ARG_JAR_NAME=${project.shadowJar.archiveFileName.get()}",
             "."
 }
 
 task findRunningDockerContainer(type:Exec) {
-    group "docker"
+    description "Check if $containerName Docker container is running."
+
+    with sharedExecTaskCfg
 
     standardOutput = new ByteArrayOutputStream()
 
@@ -22,7 +43,9 @@ task findRunningDockerContainer(type:Exec) {
 }
 
 task killDockerContainer(type:Exec) {
-    group "docker"
+    description "Kill $containerName Docker container if it is running."
+
+    with sharedExecTaskCfg
 
     dependsOn findRunningDockerContainer as Task
 
@@ -35,7 +58,9 @@ task killDockerContainer(type:Exec) {
 }
 
 task findAllDockerContainers(type:Exec) {
-    group "docker"
+    description "Find stopped $containerName Docker container."
+
+    with sharedExecTaskCfg
 
     standardOutput = new ByteArrayOutputStream()
 
@@ -45,7 +70,9 @@ task findAllDockerContainers(type:Exec) {
 }
 
 task rmDockerContainer(type:Exec) {
-    group "docker"
+    description "Remove stopped $containerName Docker container."
+
+    with sharedExecTaskCfg
 
     dependsOn findAllDockerContainers as Task
 
@@ -57,8 +84,10 @@ task rmDockerContainer(type:Exec) {
             containerName
 }
 
-task cleanDocker(type:Exec) {
-    group "docker"
+task cleanDockerContainer(type:Exec) {
+    description "Kill (if running) and remove $containerName Docker container."
+
+    with sharedExecTaskCfg
 
     dependsOn killDockerContainer as Task, rmDockerContainer as Task
 
@@ -66,15 +95,16 @@ task cleanDocker(type:Exec) {
 }
 
 task runDockerImage(type:Exec) {
-    group "docker"
+    description "Rebuild image and run $containerName Docker container."
 
-    dependsOn cleanDocker as Task, buildDockerImage as Task
+    with sharedExecTaskCfg
 
-    commandLine "echo", "docker", "run",
+    dependsOn cleanDockerContainer as Task, buildDockerImage as Task
+
+    commandLine "docker", "run",
             "-t",
             "--name", containerName,
             "--hostname", containerName,
             "--network", "streaming-capstone",
-            "-p", "79:8080",
             "$containerTag:latest"
 }

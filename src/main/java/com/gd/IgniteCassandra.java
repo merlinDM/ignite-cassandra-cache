@@ -2,6 +2,7 @@ package com.gd;
 
 import com.datastax.driver.core.policies.RoundRobinPolicy;
 import org.apache.ignite.Ignite;
+import org.apache.ignite.IgniteCache;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.cache.store.cassandra.CassandraCacheStoreFactory;
 import org.apache.ignite.cache.store.cassandra.datasource.DataSource;
@@ -10,17 +11,14 @@ import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
 
 public class IgniteCassandra {
 
@@ -34,9 +32,15 @@ public class IgniteCassandra {
     private static final String LOG4J_PROPERTIES = "log4j.properties";
 
     public static void main(String[] args) throws IOException, URISyntaxException {
+        IgniteConfiguration igniteConfig = setupIgniteConfiguration(IgniteCassandra.APP_PROPERTIES_FILE);
 
+        Ignite ignite = Ignition.start(igniteConfig);
+    }
+
+    @NotNull
+    public static IgniteConfiguration setupIgniteConfiguration(String appPropertiesFile) throws URISyntaxException, IOException {
         PropertiesLogger appConfig = new PropertiesLogger();
-        appConfig.load(APP_PROPERTIES_FILE);
+        appConfig.load(appPropertiesFile);
 
         CacheConfiguration cacheConfig = new CacheConfiguration();
         IgniteConfiguration igniteConfig = new IgniteConfiguration();
@@ -69,13 +73,30 @@ public class IgniteCassandra {
         // Sets the cache configuration
         igniteConfig.setCacheConfiguration(cacheConfig);
 
-        // Starting Ignite
-        Ignite ignite = Ignition.start(igniteConfig);
+        return igniteConfig;
     }
 
     public static KeyValuePersistenceSettings getPersistenceSettings(String filename) throws URISyntaxException, IOException {
-        Path path = Path.of(".", filename);
-        String xmlLine = Files.readString(path, StandardCharsets.UTF_8);
+        String xmlLine = null;
+        try {
+            byte[] bytes = IgniteCassandra
+                    .class
+                    .getClassLoader()
+                    .getResourceAsStream(filename)
+                    .readAllBytes();
+            xmlLine = new String(bytes);
+        }
+        catch (NullPointerException npe) {
+            logger.info(String.format("Couldn't find %s in resoures.", filename));
+        }
+        if (xmlLine == null) {
+            logger.info("Assuming " + filename + " is absolute path");
+            Path path = FileSystems
+                    .getDefault()
+                    .getPath(filename)
+                    .toAbsolutePath();
+            xmlLine = Files.readString(path, StandardCharsets.UTF_8);
+        }
         logger.debug(xmlLine);
         KeyValuePersistenceSettings settings = new KeyValuePersistenceSettings(xmlLine);
         return settings;

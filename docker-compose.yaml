@@ -1,0 +1,10 @@
+version: '3.7'
+services:
+  cassandra-00:
+    image: gd/cassandra:latest
+  ignite-00:
+    image: gd/ignite:latest
+    depends_on:
+      - cassandra-00
+    ports:
+      - 79:8080
