@@ -28,7 +28,7 @@ public class IgniteCassandra {
     private static final String CASSANDRA_USER_NAME = "cassandra.username";
     private static final String CASSANDRA_USER_PASSWORD = "cassandra.password";
     private static final String IGNITE_PERSISTENCE_SETTINGS = "ignite.persistenceSettings";
-    private static final String CACHE_NAME = "ignite-cassandra";
+    public  static final String CACHE_NAME = "ignite-cassandra";
     private static final String LOG4J_PROPERTIES = "log4j.properties";
 
     public static void main(String[] args) throws IOException, URISyntaxException {
@@ -76,6 +76,7 @@ public class IgniteCassandra {
         return igniteConfig;
     }
 
+    @NotNull
     public static KeyValuePersistenceSettings getPersistenceSettings(String filename) throws URISyntaxException, IOException {
         String xmlLine = null;
         try {
@@ -90,7 +91,7 @@ public class IgniteCassandra {
             logger.info(String.format("Couldn't find %s in resoures.", filename));
         }
         if (xmlLine == null) {
-            logger.info("Assuming " + filename + " is absolute path");
+            logger.info(String.format("Assuming %s is absolute path", filename));
             Path path = FileSystems
                     .getDefault()
                     .getPath(filename)

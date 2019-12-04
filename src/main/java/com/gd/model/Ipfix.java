@@ -70,4 +70,14 @@ public class Ipfix {
     public int hashCode() {
         return Objects.hash(ip, url, eventTime, eventType);
     }
+
+    @Override
+    public String toString() {
+        return "Ipfix{" +
+                "ip='" + ip + '\'' +
+                ", url='" + url + '\'' +
+                ", eventTime=" + eventTime +
+                ", eventType='" + eventType + '\'' +
+                '}';
+    }
 }

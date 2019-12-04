@@ -1,4 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <persistence keyspace="ignite" table="access_log_test">
-    <keyPersistence class="java.lang.String" strategy="PRIMITIVE" />
-    <valuePersistence class="java.lang.String" strategy="PRIMITIVE" />
+    <keyPersistence class="com.gd.model.IpfixKey" strategy="POJO"/>
+    <valuePersistence class="com.gd.model.Ipfix" strategy="POJO"/>
 </persistence>

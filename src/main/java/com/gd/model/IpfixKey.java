@@ -53,4 +53,12 @@ public class IpfixKey {
 
     }
 
+    @Override
+    public String toString() {
+        return "IpfixKey{" +
+                "ip='" + ip + '\'' +
+                ", url='" + url + '\'' +
+                ", eventTime=" + eventTime +
+                '}';
+    }
 }

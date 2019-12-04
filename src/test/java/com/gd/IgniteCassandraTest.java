@@ -7,6 +7,7 @@ import org.apache.ignite.IgniteCache;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.cache.store.cassandra.persistence.KeyValuePersistenceSettings;
 import org.apache.ignite.configuration.IgniteConfiguration;
+import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.junit.Test;
@@ -38,12 +39,6 @@ public class IgniteCassandraTest {
         assertEquals(settings.getKeyspace(), "ignite");
     }
 
-//    @Test
-//    public void testPersistenceSettingsLoad2() throws URISyntaxException, IOException {
-//        String testResource = "/src/test/resources/persistence-settings.xml";
-//        KeyValuePersistenceSettings settings = IgniteCassandra.getPersistenceSettings(testResource);
-//    }
-
     @Test
     public void testIpfixModel() {
 
@@ -62,9 +57,10 @@ public class IgniteCassandraTest {
             fail();
         }
 
+        LogManager.getLogger("org.apache.ignite").setLevel(Level.INFO);
         Ignite ignite = Ignition.start(igniteConfig);
 
-        IgniteCache<IpfixKey, Ipfix> cache = ignite.getOrCreateCache("access_log_test");
+        IgniteCache<IpfixKey, Ipfix> cache = ignite.getOrCreateCache(IgniteCassandra.CACHE_NAME);
 
         Ipfix value = new Ipfix();
         value.setIp("10.10.1.10");
@@ -73,8 +69,9 @@ public class IgniteCassandraTest {
         value.setEventType("click");
         IpfixKey key = new IpfixKey(value);
         cache.put(key, value);
-
         Ipfix result = cache.get(key);
+
+        System.out.println(String.format("Put: %s;\nGot: %s", value, result));
 
         assertTrue(result.equals(value));
     }
